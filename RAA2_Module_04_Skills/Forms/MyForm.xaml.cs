@@ -23,10 +23,12 @@ namespace RAA2_Module_04_Skills
     public partial class MyForm : Window
     {
         ExternalEvent myEvent;
-        public MyForm(ExternalEvent _event)
+        ExternalEvent myEvent2;
+        public MyForm(ExternalEvent _event, ExternalEvent _event2)
         {
             InitializeComponent();
             myEvent = _event;
+            myEvent2 = _event2;
             
         }
 
@@ -46,6 +48,11 @@ namespace RAA2_Module_04_Skills
 
             myEvent.Raise();
 
+        }
+
+        private void btnButton2_Click(object sender, RoutedEventArgs e)
+        {
+            myEvent2.Raise();
         }
     }
 }

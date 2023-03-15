@@ -11,8 +11,8 @@
             <CheckBox x:Name="cbxBoolean" Content="Is Placeholder?" Margin="5" HorizontalAlignment="Center"/>
             <TextBox x:Name="tbxSheetNum" Width="300" Height="30" Margin="5"/>
             <TextBox x:Name="tbxSheetName" Width="300" Height="30" Margin="5"/>
-            <Button x:Name="btnButton" Content="Click to do something!" Width="100" Height="30" Click="btnButton_Click"/>
-    
+            <Button x:Name="btnButton" Content="Set Color" Width="100" Height="30" Click="btnButton_Click"/>
+            <Button x:Name="btnButton2" Content="Reset" Width="100" Height="30" Click="btnButton2_Click"/>
         </StackPanel>
     </Grid>
 </Window>

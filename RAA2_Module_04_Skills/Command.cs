@@ -7,6 +7,7 @@ using Autodesk.Revit.UI.Selection;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Controls;
 
@@ -31,8 +32,11 @@ namespace RAA2_Module_04_Skills
             EventAction myAction = new EventAction();
             ExternalEvent myEvent = ExternalEvent.Create(myAction);
 
+            EventAction2 myAction2 = new EventAction2();
+            ExternalEvent myEvent2 = ExternalEvent.Create(myAction2);
+
             // open form
-            MyForm currentForm = new MyForm(myEvent)
+            MyForm currentForm = new MyForm(myEvent, myEvent2)
             { 
                 Width = 300,
                 Height = 300,
@@ -58,35 +62,105 @@ namespace RAA2_Module_04_Skills
     {
         public void Execute(UIApplication uiapp)
         {
-            Document Doc = uiapp.ActiveUIDocument.Document;
+            UIDocument uidoc = uiapp.ActiveUIDocument;
+            Document Doc = uidoc.Document;
 
-            FilteredElementCollector collector = new FilteredElementCollector(Doc);
-            collector.OfCategory(BuiltInCategory.OST_TitleBlocks);
+            List<ElementId> selectedElems = uidoc.Selection.GetElementIds().ToList();
 
-            using (Transaction t = new Transaction(Doc))
+            TaskDialog.Show("Test", "You selected " + selectedElems.Count.ToString() + " elements.");
+
+            OverrideGraphicSettings newSettings = new OverrideGraphicSettings();
+
+            Color newColor = new Color(255, 0, 0);
+            newSettings.SetCutForegroundPatternColor(newColor);
+            newSettings.SetSurfaceForegroundPatternColor(newColor);
+
+            FillPatternElement curPatt = GetFillPatternByName(Doc, "<Solid fill>");
+            newSettings.SetCutForegroundPatternId(curPatt.Id);
+            newSettings.SetSurfaceForegroundPatternId(curPatt.Id);
+
+            using(Transaction t = new Transaction(Doc))
             {
-                t.Start("Create new sheet");
+                t.Start("Change element colors");
 
-                ViewSheet newSheet;
-                if(Globals.IsPlaceholder)
+                foreach(ElementId curId in selectedElems)
                 {
-                    newSheet = ViewSheet.CreatePlaceholder(Doc);
+                    Doc.ActiveView.SetElementOverrides(curId, newSettings);
                 }
-                else
-                {
-                    newSheet = ViewSheet.Create(Doc, collector.FirstElementId());
-                }
-
-                newSheet.SheetNumber = Globals.SheetNum;
-                newSheet.Name = Globals.SheetName;
 
                 t.Commit();
             }
+
+            //FilteredElementCollector collector = new FilteredElementCollector(Doc);
+            //collector.OfCategory(BuiltInCategory.OST_TitleBlocks);
+
+            //using (Transaction t = new Transaction(Doc))
+            //{
+            //    t.Start("Create new sheet");
+
+            //    ViewSheet newSheet;
+            //    if(Globals.IsPlaceholder)
+            //    {
+            //        newSheet = ViewSheet.CreatePlaceholder(Doc);
+            //    }
+            //    else
+            //    {
+            //        newSheet = ViewSheet.Create(Doc, collector.FirstElementId());
+            //    }
+
+            //    newSheet.SheetNumber = Globals.SheetNum;
+            //    newSheet.Name = Globals.SheetName;
+
+            //    t.Commit();
+            //}
+        }
+
+        private FillPatternElement GetFillPatternByName(Document doc, string name)
+        {
+            FillPatternElement curFPE = null;
+
+            curFPE = FillPatternElement.GetFillPatternElementByName(doc, FillPatternTarget.Drafting, name);
+
+            return curFPE;
         }
 
         public string GetName()
         {
             return "EventAction";
+        }
+    }
+
+    public class EventAction2 : IExternalEventHandler
+    {
+        public void Execute(UIApplication uiapp)
+        {
+            UIDocument uidoc = uiapp.ActiveUIDocument;
+            Document Doc = uidoc.Document;
+
+            // get all elements in view
+            FilteredElementCollector collector = new FilteredElementCollector(Doc, Doc.ActiveView.Id);
+            List<Element> viewElements = collector.Cast<Element>().ToList();
+
+            OverrideGraphicSettings newSettings = new OverrideGraphicSettings();
+
+            using (Transaction t = new Transaction(Doc))
+            {
+                t.Start("Rest elements");
+
+                foreach (Element curElem in viewElements)
+                {
+                    Doc.ActiveView.SetElementOverrides(curElem.Id, newSettings);
+                }
+
+                t.Commit();
+            }
+
+           
+        }
+
+        public string GetName()
+        {
+            return "EventAction2";
         }
     }
 }
