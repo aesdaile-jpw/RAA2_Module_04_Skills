@@ -145,7 +145,7 @@ namespace RAA2_Module_04_Skills
 
             using (Transaction t = new Transaction(Doc))
             {
-                t.Start("Rest elements");
+                t.Start("Reset elements");
 
                 foreach (Element curElem in viewElements)
                 {
